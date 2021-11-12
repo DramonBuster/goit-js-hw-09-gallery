@@ -70,48 +70,60 @@ const refs = {
   imgGallery: document.querySelector('.js-gallery'),
   lightbox: document.querySelector('.js-lightbox'),
   imgLightbox: document.querySelector('.lightbox__image'),
-  btnLightbox: document.querySelector('.lightbox__button')
+  btnLightbox: document.querySelector('.lightbox__button'),
+  overlayLightbox: document.querySelector('.lightbox__overlay')
 }
 
 const createMarkup = ({ preview, original, description }) => {
-  
   const imgEl = document.createElement('img');
-    imgEl.src = preview;
-    imgEl.alt = description;
-    imgEl.dataset.source = original;
-    imgEl.classList.add('gallery__image');
-  
-  const linkEl = document.createElement('a');
-    linkEl.href = imgEl.dataset.source;
-    linkEl.classList.add('gallery__link');
+  imgEl.src = preview;
+  imgEl.alt = description;
+  imgEl.dataset.source = original;
+  imgEl.classList.add('gallery__image');
 
-    linkEl.appendChild(imgEl);
+  const linkEl = document.createElement('a');
+  linkEl.href = imgEl.dataset.source;
+  linkEl.classList.add('gallery__link');
+
+  linkEl.appendChild(imgEl);
 
   const itemEl = document.createElement('li');
-  itemEl.appendChild(linkEl);
   itemEl.classList.add('gallery__item');
-  return itemEl;
+
+  itemEl.appendChild(linkEl);
+
+  return linkEl;
 }
 
 const el = galleryItems.map(createMarkup);
 
 refs.imgGallery.append(...el);
 
-refs.imgGallery.addEventListener('click', openModal);
-
-function openModal(event) {
-  if (event.target.nodeName !== "IMG") {
-    return;
-  }
-  event.preventDefault();
-  console.log(event.target.dataset.source);
-  refs.lightbox.classList.add('is-open');
-  refs.imgLightbox.src = event.target.dataset.source;
-  refs.btnLightbox.addEventListener('click', closeModal);
-}
-
-function closeModal(event) {
+const closeModal = () => {
   refs.lightbox.classList.remove('is-open');
   refs.btnLightbox.removeEventListener('click', closeModal);
+  refs.overlayLightbox.removeEventListener('click', closeModal)
   refs.imgLightbox.src = '';
 }
+
+const openModal = event => {
+  // if (event.target.nadeName !== "IMG") {
+  //   return;
+  // }
+
+  event.preventDefault();
+  refs.imgLightbox.src = event.target.dataset.source;
+  refs.btnLightbox.addEventListener('click', closeModal);
+  refs.overlayLightbox.addEventListener('click', closeModal);
+  refs.lightbox.classList.add('is-open');
+}
+
+refs.imgGallery.addEventListener('click', openModal);
+
+const esc = event => {
+  if (event.code === 'Escape') {
+    closeModal();
+  }
+};
+
+document.addEventListener('keydown', esc);
